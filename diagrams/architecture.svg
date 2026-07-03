@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 520" width="100%" height="auto" style="background:#0b1020;font-family:Inter,Segoe UI,Roboto,sans-serif">
+<text x="40" y="36" font-size="20" font-weight="700" fill="#e4e8ff">Persistent Reasoning Engine — Architecture</text>
+<text x="40" y="58" font-size="13" fill="#94a3b8">EDGAR → Parse → Extract (LLM) → Merge (Postgres) → Query (FastAPI)</text>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#5a6db5"/></marker>
+</defs>
+<rect x="80.0" y="110" width="200" height="90" rx="10" fill="#fb7185" fill-opacity="0.15" stroke="#fb7185" stroke-width="2"/>
+<text x="180.0" y="147.0" text-anchor="middle" font-size="14" font-weight="600" fill="#e4e8ff">Ingest</text>
+<text x="180.0" y="171.0" text-anchor="middle" font-size="11" fill="#94a3b8">EDGAR
+httpx async
+Rate-limit safe</text>
+<rect x="310.0" y="110" width="200" height="90" rx="10" fill="#fbbf24" fill-opacity="0.15" stroke="#fbbf24" stroke-width="2"/>
+<text x="410.0" y="147.0" text-anchor="middle" font-size="14" font-weight="600" fill="#e4e8ff">Parse</text>
+<text x="410.0" y="171.0" text-anchor="middle" font-size="11" fill="#94a3b8">PDF + HTML
+pdfplumber
+BeautifulSoup</text>
+<rect x="540.0" y="110" width="200" height="90" rx="10" fill="#fb923c" fill-opacity="0.15" stroke="#fb923c" stroke-width="2"/>
+<text x="640.0" y="147.0" text-anchor="middle" font-size="14" font-weight="600" fill="#e4e8ff">Extract</text>
+<text x="640.0" y="171.0" text-anchor="middle" font-size="11" fill="#94a3b8">LLM Extraction
+OpenAI + Anthropic
+Pydantic tool-call</text>
+<rect x="770.0" y="110" width="200" height="90" rx="10" fill="#a78bfa" fill-opacity="0.15" stroke="#a78bfa" stroke-width="2"/>
+<text x="870.0" y="147.0" text-anchor="middle" font-size="14" font-weight="600" fill="#e4e8ff">Merge</text>
+<text x="870.0" y="171.0" text-anchor="middle" font-size="11" fill="#94a3b8">merge_fact()
+ONLY writer to
+enterprise_state</text>
+<rect x="1000.0" y="110" width="200" height="90" rx="10" fill="#34d399" fill-opacity="0.15" stroke="#34d399" stroke-width="2"/>
+<text x="1100.0" y="147.0" text-anchor="middle" font-size="14" font-weight="600" fill="#e4e8ff">Query</text>
+<text x="1100.0" y="171.0" text-anchor="middle" font-size="11" fill="#94a3b8">FastAPI
+state / changes
+risks / health</text>
+<line x1="280.0" y1="155.0" x2="310.0" y2="155.0" stroke="#5a6db5" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="510.0" y1="155.0" x2="540.0" y2="155.0" stroke="#5a6db5" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="740.0" y1="155.0" x2="770.0" y2="155.0" stroke="#5a6db5" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="970.0" y1="155.0" x2="1000.0" y2="155.0" stroke="#5a6db5" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="340.0" y="280" width="600" height="70" rx="10" fill="#fb7185" fill-opacity="0.15" stroke="#fb7185" stroke-width="2"/>
+<text x="640.0" y="307.0" text-anchor="middle" font-size="14" font-weight="600" fill="#e4e8ff">source_documents</text>
+<text x="640.0" y="331.0" text-anchor="middle" font-size="11" fill="#94a3b8">raw text · parsed PDF/HTML · accession number · filing_date · version</text>
+<line x1="410.0" y1="200" x2="410.0" y2="280" stroke="#5a6db5" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="870.0" y1="200" x2="870.0" y2="280" stroke="#5a6db5" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="60" y="400" width="1160" height="90" rx="12" fill="#a78bfa" fill-opacity="0.08" stroke="#a78bfa" stroke-width="2"/>
+<text x="74" y="424" font-size="13" font-weight="700" fill="#e4e8ff">Persistent State (PostgreSQL 15)</text>
+<rect x="74.0" y="436" width="274.0" height="40" rx="6" fill="#a78bfa" fill-opacity="0.18" stroke="#a78bfa" stroke-width="1.5"/>
+<text x="211.0" y="454" text-anchor="middle" font-size="12" font-weight="600" fill="#e4e8ff">entities</text>
+<text x="211.0" y="469" text-anchor="middle" font-size="10" fill="#94a3b8">ticker · name</text>
+<rect x="360.0" y="436" width="274.0" height="40" rx="6" fill="#a78bfa" fill-opacity="0.18" stroke="#a78bfa" stroke-width="1.5"/>
+<text x="497.0" y="454" text-anchor="middle" font-size="12" font-weight="600" fill="#e4e8ff">enterprise_state</text>
+<text x="497.0" y="469" text-anchor="middle" font-size="10" fill="#94a3b8">category · fact_json · valid_from/until · confidence</text>
+<rect x="646.0" y="436" width="274.0" height="40" rx="6" fill="#a78bfa" fill-opacity="0.18" stroke="#a78bfa" stroke-width="1.5"/>
+<text x="783.0" y="454" text-anchor="middle" font-size="12" font-weight="600" fill="#e4e8ff">enterprise_state_transitions</text>
+<text x="783.0" y="469" text-anchor="middle" font-size="10" fill="#94a3b8">prev_state_id → new_state_id · transition_at</text>
+<rect x="932.0" y="436" width="274.0" height="40" rx="6" fill="#a78bfa" fill-opacity="0.18" stroke="#a78bfa" stroke-width="1.5"/>
+<text x="1069.0" y="454" text-anchor="middle" font-size="12" font-weight="600" fill="#e4e8ff">review_queue</text>
+<text x="1069.0" y="469" text-anchor="middle" font-size="10" fill="#94a3b8">low_confidence candidates</text>
+<line x1="870.0" y1="230" x2="870.0" y2="400" stroke="#5a6db5" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="1100.0" y1="230" x2="1100.0" y2="400" stroke="#5a6db5" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="1100.0" y1="230" x2="1100.0" y2="400" stroke="#34d399" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+<text x="180.0" y="100" text-anchor="middle" font-size="10" fill="#94a3b8">SEC EDGAR REST</text>
+<text x="1100.0" y="100" text-anchor="middle" font-size="10" fill="#94a3b8">HTTP client</text>
+<text x="1060" y="90" font-size="12" font-weight="700" fill="#e4e8ff">Provenance</text>
+<text x="1060" y="108" font-size="11" fill="#94a3b8">every fact carries</text>
+<text x="1060" y="124" font-size="11" fill="#94a3b8">· source_doc_id</text>
+<text x="1060" y="140" font-size="11" fill="#94a3b8">· source_section</text>
+<text x="1060" y="156" font-size="11" fill="#94a3b8">· valid_from / until</text>
+<text x="1060" y="172" font-size="11" fill="#94a3b8">· confidence ∈ [0, 1]</text>
+<text x="40" y="508" font-size="10" fill="#94a3b8">Architectural invariant: only merge_fact() writes to enterprise_state (advisory lock · idempotency · confidence gate · conflict detection · transition log).</text>
+</svg>
