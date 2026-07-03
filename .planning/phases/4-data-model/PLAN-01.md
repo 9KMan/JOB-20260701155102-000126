@@ -1,98 +1,96 @@
 # Phase 4: Data Model
 
 ## Phase Goal
-Define the data model, entities, relationships, and storage approach.
+Five tables. Bitemporal state in `enterprise_state`. Audit trail in `enterprise_state_transitions`. Idempotent ingest via UNIQUE constraint on `source_documents`.
 
 ## Files to Create
 
-```file:alembic.ini
-[alembic]
-script_location = alembic
-prepend_sys_path = .
-version_path_separator = os
+```file:src/schema.sql
+-- Persistent Reasoning Engine — DDL
 
-[loggers]
-keys = root,alembic
+CREATE TABLE entities (
+    id          SERIAL PRIMARY KEY,
+    ticker      TEXT UNIQUE,
+    name        TEXT NOT NULL,
+    created_at  TIMESTOGTZ NOT NULL DEFAULT NOW()
+);
 
-[handlers]
-keys = console
+CREATE TABLE source_documents (
+    id              SERIAL PRIMARY KEY,
+    entity_id       INT REFERENCES entities(id),
+    title           TEXT NOT NULL,
+    filing_date     DATE,
+    document_type   TEXT,  -- '10-K','10-Q','8-K','shareholder_letter','earnings_transcript'
+    accession_no    TEXT,  -- SEC EDGAR accession number
+    version         INT DEFAULT 1,
+    raw_text        TEXT,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(entity_id, document_type, filing_date, version)
+);
+CREATE INDEX source_documents_entity_idx ON source_documents(entity_id);
 
-[formatters]
-keys = generic
+CREATE TABLE enterprise_state (
+    id              BIGSERIAL PRIMARY KEY,
+    entity_id       INT NOT NULL REFERENCES entities(id),
+    category        TEXT NOT NULL,  -- 'doctrine','capability','active_state','active_obligation','risk','management_decision','causal_relationship','enterprise_trajectory'
+    fact_json       JSONB NOT NULL,
+    valid_from      TIMESTAMPTZ NOT NULL,
+    valid_until     TIMESTAMPTZ,     -- NULL = currently valid
+    confidence      NUMERIC(3,2) NOT NULL CHECK (confidence BETWEEN 0 AND 1),
+    source_doc_id   INT NOT NULL REFERENCES source_documents(id),
+    source_section  TEXT NOT NULL
+);
+CREATE INDEX enterprise_state_entity_idx ON enterprise_state(entity_id, category);
+CREATE INDEX enterprise_state_valid_idx  ON enterprise_state(valid_from, valid_until);
+CREATE UNIQUE INDEX enterprise_state_current_idx
+    ON enterprise_state(entity_id, category) WHERE valid_until IS NULL;
 
-[logger_root]
-level = WARN
-handlers = console
-qualname =
+CREATE TABLE enterprise_state_transitions (
+    id              BIGSERIAL PRIMARY KEY,
+    entity_id       INT NOT NULL REFERENCES entities(id),
+    category        TEXT NOT NULL,
+    prev_state_id   BIGINT REFERENCES enterprise_state(id),
+    new_state_id    BIGINT REFERENCES enterprise_state(id),
+    source_doc_id   INT NOT NULL REFERENCES source_documents(id),
+    transition_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX transitions_entity_idx ON enterprise_state_transitions(entity_id, transition_at);
 
-[logger_alembic]
-level = INFO
-handlers =
-qualname = alembic
+CREATE TABLE review_queue (
+    id              BIGSERIAL PRIMARY KEY,
+    entity_id       INT NOT NULL REFERENCES entities(id),
+    fact_json       JSONB,
+    reason          TEXT NOT NULL,  -- 'low_confidence','malformed','unknown_entity'
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    resolved_at     TIMESTAMPTZ,
+    resolved_by     TEXT
+);
 ```
 
-```file:alembic/env.py
-"""Alembic async migration environment."""
-from logging.config import fileConfig
-from sqlalchemy import pool
-from sqlalchemy.ext.asyncio import async_engine_from_config
-from alembic import context
-from app.models import Base
-
-config = context.config
-if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
-target_metadata = Base.metadata
-
-def run_migrations_offline() -> None:
-    url = config.get_main_option('sqlalchemy.url')
-    context.configure(url=url, target_metadata=target_metadata, literal_binds=True)
-    with context.begin_transaction():
-        context.run_migrations()
-
-async def run_async_migrations():
-    from app.config import get_settings
-    settings = get_settings()
-    configuration = {'sqlalchemy.url': settings.DATABASE_URL}
-    connectable = async_engine_from_config(configuration, prefix='sqlalchemy.', poolclass=pool.NullPool)
-    async with connectable.connect() as connection:
-        await connection.run_sync(do_run_migrations)
-    await connectable.dispose()
-
-def do_run_migrations(connection):
-    context.configure(connection=connection, target_metadata=target_metadata)
-    with context.begin_transaction():
-        context.run_migrations()
-
-if context.is_offline_mode():
-    run_migrations_offline()
-else:
-    import asyncio
-    asyncio.run(run_async_migrations())
-```
-
-```file:alembic/script.py.mako
-"""${message}
-
-Revision ID: ${rev}
-Revises: ${down_rev}
-Create Date: ${create_date}
+```file:src/db.py
+"""Connection helper — psycopg2 with RealDictCursor, context-manager protocol.
+Single open()/close() per request via FastAPI dependency.
 """
-from typing import Sequence, Union
-from alembic import op
-import sqlalchemy as sa
-${imports if imports else ''}
+import os
+import psycopg2
+import psycopg2.extras
+from contextlib import contextmanager
 
-revision: str = ${repr(rev)}
-down_revision: Union[str, None] = ${repr(down_rev)}
-branch_labels: Union[str, Sequence[str], None] = ${repr(branch_labels)}
-depends_on: Union[str, Sequence[str], None] = ${repr(depends_on)}
-```
+def connection_url() -> str:
+    return os.environ.get("DATABASE_URL", "postgresql://reasoning:test@localhost:5432/reasoning")
 
-```file:alembic/versions/.gitkeep
-# Migration files go here
+@contextmanager
+def get_cursor():
+    conn = psycopg2.connect(connection_url(), cursor_factory=psycopg2.extras.RealDictCursor)
+    try:
+        with conn, conn.cursor() as cur:
+            yield cur
+    finally:
+        conn.close()
 ```
 
 ## Done When
-- alembic revision --autogenerate creates initial migration
-- alembic upgrade head runs successfully
+- `psql reasoning < src/schema.sql` creates 5 tables
+- `enterprise_state_current_idx` is a partial UNIQUE — only one currently-valid row per (entity_id, category)
+- `src/db.py::get_cursor()` is a working context manager
+- DDL includes FK constraints to source_documents (REQ-04)

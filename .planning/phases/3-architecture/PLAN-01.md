@@ -1,118 +1,98 @@
 # Phase 3: Architecture
 
 ## Phase Goal
-Design the system architecture including API, data flow, and integrations.
+Five-layer architecture: Ingest → Parse → Extract → Merge → Query, with `merge.py` as the architectural invariant (only writer to `enterprise_state`).
+
+```
++-------------------+     +----------+     +----------+     +-----------+     +-----------+
+| Ingest (EDGAR)    | --> | Parse    | --> | Extract  | --> | Merge     | --> | Query     |
+| edgar.py          |     | parse.py |     | extract.py|    | merge.py  |     | api.py    |
+| httpx async       |     | pdf/html |     | raw SDKs |     | ONLY      |     | FastAPI   |
+| rate-limit safe   |     |          |     | +Pydantic|     | writer    |     | sync      |
++-------------------+     +----------+     +----------+     +-----------+     +-----------+
+                                                                       |
+                                                                       v
+                                                          +-------------------------+
+                                                          | PostgreSQL 15 (JSONB)   |
+                                                          | entities                |
+                                                          | source_documents        |
+                                                          | enterprise_state        |
+                                                          | enterprise_state_trans  |
+                                                          | review_queue            |
+                                                          +-------------------------+
+```
 
 ## Files to Create
 
-```file:app/__init__.py
-"""App package."""
+```file:src/__init__.py
+"""Persistent Reasoning Engine — main package."""
 ```
 
-```file:app/main.py
-"""FastAPI application factory."""
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1 import router as v1_router
-from app.config import settings
-
-def create_app() -> FastAPI:
-    app = FastAPI(
-        title=settings.PROJECT_NAME,
-        version='1.0.0',
-        openapi_url='/api/v1/openapi.json',
-    )
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=['*'],
-        allow_credentials=True,
-        allow_methods=['*'],
-        allow_headers=['*'],
-    )
-    app.include_router(v1_router, prefix='/api/v1')
-    return app
-
-app = create_app()
+```file:src/schemas.py
+"""8 enterprise-object Pydantic schemas — Doctrine, Capability, ActiveState,
+ActiveObligation, Risk, ManagementDecision, CausalRelationship,
+EnterpriseTrajectory. Each inherits FactBase (valid_from, valid_until,
+confidence ∈ [0,1], source_doc_id, source_section).
+"""
 ```
 
-```file:app/config.py
-"""Application settings."""
-from pydantic_settings import BaseSettings
-from functools import lru_cache
+```file:src/merge.py
+"""Architectural invariant: ONLY merge_fact() writes to enterprise_state.
 
-class Settings(BaseSettings):
-    PROJECT_NAME: str = 'API'
-    DATABASE_URL: str = 'postgresql+asyncpg://user:pass@localhost/dbname'
-    JWT_SECRET: str
-    JWT_ALGORITHM: str = 'HS256'
-    JWT_EXPIRE_MINUTES: int = 15
-
-    class Config:
-        env_file = '.env'
-        case_sensitive = True
-
-@lru_cache
-def get_settings() -> Settings:
-    return Settings()
+Five protections:
+1. pg_advisory_xact_lock(entity_id) — serialize concurrent merges
+2. Idempotency check via enterprise_state_transitions
+3. Confidence gate: confidence < 0.6 → review_queue
+4. Conflict detection: supersede current fact in same category
+5. Transition log: every state change recorded
+"""
 ```
 
-```file:app/database.py
-"""Async SQLAlchemy engine and session."""
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from app.config import get_settings
-
-settings = get_settings()
-engine = create_async_engine(settings.DATABASE_URL, echo=False)
-async_session_maker = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
-
-async def get_db() -> AsyncSession:
-    async with async_session_maker() as session:
-        yield session
+```file:src/extract.py
+"""LLM extractor — raw OpenAI/Anthropic SDKs with Pydantic tool-calling.
+Produces candidates; merge step applies them. Never writes to DB.
+"""
 ```
 
-```file:app/models/__init__.py
-"""Database models."""
-from sqlalchemy.orm import DeclarativeBase
-
-class Base(DeclarativeBase):
-    pass
+```file:src/parse.py
+"""PDF (pdfplumber) + HTML (BeautifulSoup) parsers. Returns section chunks
+for LLM extraction. Naive page-level parsing for v1.
+"""
 ```
 
-```file:app/schemas/__init__.py
-"""Pydantic schemas."""
-from pydantic import BaseModel
+```file:src/edgar.py
+"""SEC EDGAR ingest — fetches 10-K/10-Q/8-K filings via httpx.
+Respects 10 req/sec rate limit. Requires EDGAR_CONTACT_EMAIL env var.
+"""
 ```
 
-```file:app/api/v1/__init__.py
-"""API v1 router."""
-from fastapi import APIRouter
-router = APIRouter()
+```file:src/api.py
+"""FastAPI query layer (sync handlers, sync psycopg2).
+Endpoints:
+- GET /entities/{ticker}/state              (currently-valid)
+- GET /entities/{ticker}/state-as-of        (bitemporal)
+- GET /entities/{ticker}/changes            (temporal diff)
+- GET /entities/{ticker}/risks-active       (filter by severity)
+- GET /health
+"""
 ```
 
-```file:app/api/v1/router.py
-"""API v1 root router."""
-from fastapi import APIRouter
-from app.api.v1 import health
-
-router = APIRouter()
-router.include_router(health.router, tags=['health'])
+```file:src/schema.sql
+"""DDL — entities, source_documents, enterprise_state,
+enterprise_state_transitions, review_queue. UNIQUE constraint on
+source_documents for idempotent ingest.
+"""
 ```
 
-```file:app/api/v1/health.py
-"""Health check endpoints."""
-from fastapi import APIRouter
-router = APIRouter()
-
-@router.get('/health')
-async def health():
-    return {'status': 'ok'}
-
-@router.get('/ready')
-async def ready():
-    return {'status': 'ready'}
+```file:src/seed.py
+"""PoC seed: ingest Microsoft + Amazon 10-Ks for FY22/23/24 (6 documents).
+Uses fixture data (pre-cached EDGAR JSON) so tests don't hit SEC.
+"""
 ```
 
 ## Done When
-- uvicorn app.main:app --reload starts without errors
-- GET /api/v1/health returns {'status': 'ok'}
-- All files above exist and are non-trivial
+- All 8 source files exist under src/
+- `from src.api import app` works in Python
+- `psql reasoning < src/schema.sql` creates 5 tables
+- No file imports `sqlalchemy` or `langchain` or `llama_index`
+- `merge.py` is the only file that contains `INSERT INTO enterprise_state`
