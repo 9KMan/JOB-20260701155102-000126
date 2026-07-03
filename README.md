@@ -1,73 +1,78 @@
-# Persistent Reasoning Engine — Engagement Reference (JOB-20260701155102-000126)
+# Persistent Reasoning Engine (JOB-20260701155102-000126)
 
-**Upwork:** https://www.upwork.com/jobs/~022072001960573380854
-**Rate:** $150/hr (top of $80-150 band)
-**Engagement:** 3-6 months, <30 hrs/wk, contract-to-hire
+Open-source reference scaffold for the Persistent Reasoning Engine engagement.
+Architecture, merge-step invariant, and schema pattern are public. Production
+deployment lives in a private repo per the Upwork contract.
 
-## What this is
+**Status:** v1 PoC — Microsoft + Amazon 10-K ingestion, bitemporal state, FastAPI query layer.
 
-A public-reference scaffold for the engagement. The production system we'd build lives in this shape:
+## Architecture
 
-```
-src/
-  schemas.py         # the 8 Pydantic enterprise-object schemas
-  merge.py           # the ONLY writer to enterprise_state (architectural invariant)
-  extract.py         # LLM extraction via raw SDKs + Pydantic-validated tool-calling
-  parse.py           # PDF + HTML parsing
-  edgar.py           # SEC EDGAR ingest
-  api.py             # FastAPI query layer (state-as-of, changes, risks-active)
-  schema.sql         # DDL for entities + source_documents + enterprise_state + transitions + review_queue
-tests/
-  conftest.py
-  test_schemas.py
-  test_merge.py
-requirements.txt
-```
+![Architecture](./diagrams/architecture.svg)
+
+Five layers, each with one responsibility:
+
+| Layer | Component | Responsibility |
+|-------|-----------|----------------|
+| Ingest | `src/edgar.py` | Pull SEC filings via httpx (sync + async variants) |
+| Parse | `src/parse.py` | PDF (pdfplumber) + HTML (BeautifulSoup) → section chunks |
+| Extract | `src/extract.py` | Raw OpenAI/Anthropic SDKs + Pydantic-validated tool-calling |
+| Merge | `src/merge.py` | **The ONLY writer to `enterprise_state`** (5 invariants) |
+| Query | `src/api.py` | FastAPI: state / state-as-of / changes / risks-active |
 
 ## The architectural invariant
 
-**Only `merge.py` writes to `enterprise_state`.**
+**Only `src/merge.py::merge_fact()` writes to `enterprise_state`.**
 
-The LLM extractor (`extract.py`) produces candidate updates. The merge function (`merge_fact()`) is the only place that:
-- Acquires Postgres advisory locks per entity (serializes concurrent merges)
-- Checks idempotency (same source_doc + source_section + entity writes once)
-- Gates on confidence (below 0.6 → review_queue)
-- Detects conflicts (new fact supersedes current → marks old valid_until)
-- Records transitions (every change → enterprise_state_transitions)
+Five protections inside one Postgres transaction:
+
+1. **`pg_advisory_xact_lock(entity_id)`** — serializes concurrent merges on the same enterprise
+2. **Idempotency** — same `(source_doc_id, source_section, entity_id)` writes once
+3. **Confidence gate** — `confidence < 0.6` → `review_queue`, not `enterprise_state`
+4. **Conflict detection** — new fact supersedes current → marks old `valid_until`
+5. **Transition log** — every change → `enterprise_state_transitions`
 
 This is what makes the system **persistent** rather than **stateless**.
 
-## Stack
+## The 8 enterprise-object categories
 
-- **Python 3.12** + **FastAPI** for the query API
-- **PostgreSQL 15** + (optional) **pgvector** + (optional) **Apache AGE** for graph queries
-- **Raw OpenAI / Anthropic SDKs** for LLM extraction (NO LangChain)
-- **Pydantic v2** for schema validation
-- **pdfplumber** + **BeautifulSoup** for document parsing
-- **httpx** for SEC EDGAR ingest
-- **pytest** for tests
+Doctrine, Capability, ActiveState, ActiveObligation, Risk, ManagementDecision,
+CausalRelationship, EnterpriseTrajectory. Each is a Pydantic model in
+`src/schemas.py` inheriting from `FactBase`:
 
-## The 8 enterprise-object schemas
+```python
+class FactBase(BaseModel):
+    valid_from: datetime
+    valid_until: Optional[datetime] = None   # NULL = currently valid
+    confidence: float = Field(ge=0, le=1)   # gates below 0.6 → review_queue
+    source_doc_id: int
+    source_section: str                     # e.g. "Item 1A. Risk Factors"
+```
 
-The job description names 8 categories. Each is a Pydantic model in `src/schemas.py`:
+## API
 
-| Category | Pydantic class | Purpose |
-|---|---|---|
-| Doctrine | `Doctrine` | Long-held beliefs / principles |
-| Capabilities | `Capability` | What the enterprise can do (products, services, scale) |
-| Active States | `ActiveState` | Current conditions |
-| Active Obligations | `ActiveObligation` | Commitments (debt, lease, contract, regulatory) |
-| Risks | `Risk` | Disclosed risks with severity |
-| Management Decisions | `ManagementDecision` | Decisions + rationale + announce date |
-| Causal Relationships | `CausalRelationship` | Links between facts |
-| Enterprise Trajectory | `EnterpriseTrajectory` | Direction + evidence |
-
-Every fact has:
-- `valid_from: datetime`, `valid_until: Optional[datetime]` (temporal validity)
-- `confidence: float ∈ [0, 1]` (LLM-assigned, gates below 0.6)
-- `source_doc_id: int`, `source_section: str` (provenance)
+| Endpoint | Returns | Use case |
+|----------|---------|----------|
+| `GET /health` | `{status: ok}` | service health |
+| `GET /entities/{ticker}/state` | currently-valid facts | "Tell me about Microsoft today" |
+| `GET /entities/{ticker}/state-as-of?timestamp=...` | facts valid at date | bitemporal query |
+| `GET /entities/{ticker}/changes?from=...&to=...` | transition log | "How did the model evolve FY22→FY24?" |
+| `GET /entities/{ticker}/risks-active` | currently-active risks | filter by severity |
+| `GET /ui` | static HTML UI | curl-friendly console |
+| `GET /docs` | OpenAPI UI | full schema browser |
 
 ## Run locally
+
+### Option A — Docker Compose (one command)
+
+```bash
+docker compose up
+# → API at http://localhost:8000
+# → UI at http://localhost:8000/ui
+# → docs at http://localhost:8000/docs
+```
+
+### Option B — Local Python
 
 ```bash
 pip install -r requirements.txt
@@ -77,16 +82,104 @@ cd src && uvicorn api:app --reload
 # → http://localhost:8000
 ```
 
-For tests:
+Set env vars in `.env` (see `.env.example`):
 
 ```bash
-pytest tests/
+DATABASE_URL=postgresql://reasoning:test@localhost:5432/reasoning
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
+EDGAR_CONTACT_EMAIL=your-email@example.com   # SEC requires a real email
 ```
 
-## First deliverable (14-day prototype)
+## Tests
 
-Ingest Microsoft + Amazon annual reports for 2022, 2023, 2024. Extract structured enterprise objects. Maintain persistent state across the 6 documents. Query the temporal-diff to show how Microsoft's risk profile evolved across the 3 years.
+```bash
+pytest tests/ -v
+# 50 tests, all green in ~4s
+# Coverage:
+#   - test_schemas.py: all 8 Pydantic schemas validate
+#   - test_merge.py:    5 invariants of merge_fact (mock cursor)
+#   - test_api.py:      5 endpoints + 404 path (TestClient + mock)
+#   - test_extract.py:  Pydantic tool-calling + malformed skip
+#   - test_parse.py:    HTML/PDF section detection
+#   - test_edgar.py:    User-Agent header + async semaphore
+```
 
-## Note on this being a public scaffold
+## First deliverable (PoC)
 
-This is the **pattern library**. The actual production system for a paying client lives in a private repo. What stays public is the architecture, the merge-step invariant, and the schema pattern. The Job-119 signal-pipeline scaffold (`9KMan/JOB-20260630010302-000119`) is the closest analog — same Pydantic + tool-call + idempotent-write patterns.
+Ingest Microsoft + Amazon annual reports for FY22, FY23, FY24 (6 documents).
+Extract structured enterprise objects. Maintain persistent state across years.
+Query the temporal-diff to show how each company's risk profile evolved:
+
+```bash
+curl 'http://localhost:8000/entities/MSFT/changes?from=2022-01-01T00:00:00Z&to=2024-12-31T00:00:00Z' | jq
+```
+
+## Project structure
+
+```
+.
+├── README.md
+├── SPEC.md                  # Full specification (22K chars)
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+├── pytest.ini
+├── .env.example
+├── conftest.py              # Top-level path setup
+├── docs/
+│   └── OUT_OF_SCOPE.md
+├── diagrams/
+│   └── architecture.svg
+├── src/
+│   ├── __init__.py
+│   ├── schemas.py           # REQ-01 — 8 Pydantic enterprise-object classes
+│   ├── merge.py             # REQ-05..REQ-10 — the architectural invariant
+│   ├── extract.py           # REQ-11 — LLM tool-calling extractor
+│   ├── parse.py             # PDF + HTML parsers with section detection
+│   ├── edgar.py             # SEC EDGAR sync + async ingest
+│   ├── api.py               # FastAPI 5 endpoints + static UI mount
+│   ├── db.py                # psycopg2 connection helper
+│   ├── seed.py              # PoC seed for MSFT FY22 10-K
+│   ├── schema.sql           # DDL — 5 tables, partial UNIQUE on current state
+│   └── static/
+│       └── index.html       # API console (mounted at /ui)
+├── tests/
+│   ├── conftest.py
+│   ├── test_schemas.py      # 15 tests — all 8 schemas
+│   ├── test_merge.py        #  9 tests — 5 invariants + REQ-05 grep
+│   ├── test_api.py          #  7 tests — all 5 endpoints
+│   ├── test_extract.py      #  6 tests — tool-calling validation
+│   ├── test_parse.py        #  8 tests — section detection
+│   ├── test_edgar.py        #  4 tests — header + async semaphore
+│   └── fixtures/
+│       ├── msft_2024_10k_item1.html
+│       └── amzn_2023_10k_item1a.html
+└── .planning/               # 7 GSD phase PLAN files (gitignored on public)
+```
+
+## Why these choices
+
+**Raw OpenAI/Anthropic SDKs, not LangChain/LlamaIndex** — full control over
+tool-calling schema, no framework abstraction tax obscuring the merge step.
+
+**Sync psycopg2, not async SQLAlchemy** — Postgres advisory locks work
+natively; the throughput ceiling for ingesting + querying is well within
+sync territory. No async overhead.
+
+**Postgres + JSONB, not Neo4j** — v1 keeps causal relationships in the
+`enterprise_state_transitions` audit log. The temporal diff is achievable
+in pure SQL. Graph DBs add operational complexity not warranted at v1 scale.
+
+**No JWT/auth in v1** — PoC runs behind a trusted network. Adding JWT
+would mean a users table, refresh-token storage, password hashing — substantial
+scope creep for an extraction-quality prototype.
+
+See [docs/OUT_OF_SCOPE.md](./docs/OUT_OF_SCOPE.md) for the full list of
+deferred items and when to revisit them.
+
+## Built by
+
+**KMan / AI-Augmented Engineering Factory** — MIT licensed. Production
+deployment for paying clients lives in a private repo per the Upwork
+contract; this scaffold is the public pattern library.

@@ -38,6 +38,15 @@ CREATE TABLE enterprise_state (
 CREATE INDEX enterprise_state_entity_idx ON enterprise_state(entity_id, category);
 CREATE INDEX enterprise_state_valid_idx ON enterprise_state(valid_from, valid_until);
 
+-- REQ-05 architectural invariant, DB-enforced: at most ONE currently-valid row
+-- per (entity_id, category). Historical rows (valid_until IS NOT NULL) are
+-- exempt — the temporal table accumulates superseded facts.
+-- This is a safety net: even if application logic somehow attempts a second
+-- concurrent INSERT of a current row, Postgres rejects it.
+CREATE UNIQUE INDEX enterprise_state_one_current_per_category
+    ON enterprise_state(entity_id, category)
+    WHERE valid_until IS NULL;
+
 -- Audit log of every state change. This is what makes the temporal-diff query possible.
 CREATE TABLE enterprise_state_transitions (
     id              BIGSERIAL PRIMARY KEY,
@@ -46,6 +55,7 @@ CREATE TABLE enterprise_state_transitions (
     prev_state_id   BIGINT REFERENCES enterprise_state(id),
     new_state_id    BIGINT REFERENCES enterprise_state(id),
     source_doc_id   INT NOT NULL REFERENCES source_documents(id),
+    source_section  TEXT NOT NULL,    -- SPEC §4.4: provenance for the audit log
     transition_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

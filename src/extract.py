@@ -102,9 +102,14 @@ Extract every enterprise fact that fits the schema. Use the tools provided."""
         schema_cls = SCHEMA_REGISTRY[schema_name]
         try:
             args = json.loads(tool_call.function.arguments)
+            # Strip fields the system always supplies — the model may echo them.
+            args.pop("source_doc_id", None)
+            args.pop("source_section", None)
+            args.pop("valid_from", None)
             fact = schema_cls(
                 source_doc_id=source_doc_id,
                 source_section=section_name,
+                valid_from=filing_date,
                 **args,
             )
             candidates.append({

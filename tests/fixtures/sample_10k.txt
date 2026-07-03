@@ -1,0 +1,15 @@
+PART I
+
+Item 1. Business
+We develop and market cloud services, productivity software, and gaming
+platforms. Our flagship product is the Azure cloud platform.
+
+Item 1A. Risk Factors
+Cybersecurity attacks could materially affect our business. We rely on
+third-party suppliers for silicon and server hardware.
+
+Item 7. Management's Discussion and Analysis
+Revenue grew 15% year over year, driven by Azure consumption.
+
+Item 8. Financial Statements and Supplementary Data
+Total revenue: 245 billion USD.

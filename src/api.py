@@ -1,19 +1,60 @@
-"""FastAPI query layer — read-only endpoints over enterprise_state."""
+"""FastAPI query layer — read-only endpoints over enterprise_state.
+
+Uses src.db.get_cursor as a context manager. The DB connection helper lives
+in db.py so tests can patch it via api.get_db.
+"""
 from datetime import datetime
 from typing import Optional
-import psycopg2
-import psycopg2.extras
+from pathlib import Path
+
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.staticfiles import StaticFiles
+from db import get_cursor
 
 app = FastAPI(title="Persistent Reasoning Engine API")
 
+# Serve static UI (src/static/index.html) at /ui
+_STATIC_DIR = Path(__file__).parent / "static"
+if _STATIC_DIR.exists():
+    app.mount("/ui", StaticFiles(directory=str(_STATIC_DIR), html=True), name="static")
 
+
+# FastAPI dependency — alias for get_cursor so tests can patch `api.get_db`.
 def get_db():
-    return psycopg2.connect(
-        host="localhost", port=5432, dbname="reasoning",
-        user="reasoning", password="test",
-        cursor_factory=psycopg2.extras.RealDictCursor,
-    )
+    """FastAPI dependency: yields a cursor (delegates to get_cursor)."""
+    with get_cursor() as cur:
+        yield cur
+
+
+@app.get("/entities/{ticker}/state")
+def current_state(ticker: str):
+    """Return currently-valid facts for an entity (valid_until IS NULL).
+
+    Unlike /state-as-of which takes a timestamp, this returns the live
+    state vector — exactly what the partial UNIQUE index guarantees at
+    most one of per (entity_id, category).
+    """
+    with get_cursor() as cur:
+        cur.execute("SELECT id FROM entities WHERE ticker = %s", (ticker,))
+        entity = cur.fetchone()
+        if not entity:
+            raise HTTPException(status_code=404, detail=f"Entity {ticker} not found")
+
+        cur.execute(
+            """
+            SELECT category, fact_json, valid_from, confidence,
+                   source_doc_id, source_section
+            FROM enterprise_state
+            WHERE entity_id = %s
+              AND valid_until IS NULL
+            ORDER BY category, valid_from DESC
+            """,
+            (entity["id"],),
+        )
+        return {
+            "ticker": ticker,
+            "state": [dict(r) for r in cur.fetchall()],
+        }
 
 
 @app.get("/entities/{ticker}/state-as-of")
@@ -22,7 +63,7 @@ def state_as_of(
     timestamp: datetime = Query(...),
 ):
     """Return the enterprise state vector as it was at the given timestamp."""
-    with get_db() as conn, conn.cursor() as cur:
+    with get_cursor() as cur:
         cur.execute("SELECT id FROM entities WHERE ticker = %s", (ticker,))
         entity = cur.fetchone()
         if not entity:
@@ -54,7 +95,7 @@ def changes(
     to_ts: datetime = Query(..., alias="to"),
 ):
     """Return the state changes for an entity between two timestamps."""
-    with get_db() as conn, conn.cursor() as cur:
+    with get_cursor() as cur:
         cur.execute("SELECT id FROM entities WHERE ticker = %s", (ticker,))
         entity = cur.fetchone()
         if not entity:
@@ -86,7 +127,7 @@ def changes(
 @app.get("/entities/{ticker}/risks-active")
 def risks_active(ticker: str):
     """Return currently-active risks for an entity."""
-    with get_db() as conn, conn.cursor() as cur:
+    with get_cursor() as cur:
         cur.execute("SELECT id FROM entities WHERE ticker = %s", (ticker,))
         entity = cur.fetchone()
         if not entity:
