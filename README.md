@@ -61,6 +61,7 @@ invariants inside one Postgres transaction.
 | `src/static/index.html` | curl-friendly API console |
 | `tests/test_*.py` | 50 tests across 6 files (~875 LOC) |
 | `diagrams/architecture.svg` | One-page architecture diagram |
+| `diagrams/workflow.svg` | End-to-end ingestion workflow (5 numbered stages) |
 | `docs/OUT_OF_SCOPE.md` | Explicit list of features **not** in v1 |
 | `SPEC.md` | Full 22K-char specification |
 | `Dockerfile` + `docker-compose.yml` | One-command spin-up (Postgres + app) |
@@ -144,52 +145,15 @@ second code path to `enterprise_state`.
 
 End-to-end ingestion of a single 10-K, from SEC EDGAR to a queryable timeline:
 
-```
-┌──────────────┐   1. fetch       ┌──────────────┐
-│  SEC EDGAR   │ ───────────────► │  src/edgar   │
-│ (httpx +     │   User-Agent    │  .py         │
-│  semaphore)  │   throttle      │  async+sync  │
-└──────────────┘                  └──────┬───────┘
-                                        │ raw PDF / HTML
-                                        ▼
-┌──────────────┐   2. sectionize ┌──────────────┐
-│  Section     │ ◄────────────── │  src/parse   │
-│  chunks      │  Item 1, 1A, 7 │  .py         │
-│  by SEC item │                │  pdfplumber, │
-└──────┬───────┘                │  BeautifulSoup
-       │                        └──────────────┘
-       │ 3. LLM extract (per section)
-       ▼
-┌──────────────┐                 ┌──────────────┐
-│  Pydantic    │ ─── validate ── │  src/extract │
-│  tool-call   │ ◄────────────── │  .py         │
-│  schema      │                 │  raw SDK     │
-└──────┬───────┘                 └──────────────┘
-       │ canonical FactBase rows
-       ▼
-┌──────────────────────────────────────────────────┐
-│  src/merge.py::merge_fact()    [ONE writer]      │
-│  ┌────────────────────────────────────────────┐  │
-│  │ 1. pg_advisory_xact_lock(entity_id)        │  │
-│  │ 2. SELECT existing on (entity,category,…)?  │  │
-│  │ 3. confidence < 0.6 → INSERT review_queue  │  │
-│  │ 4. conflict → UPDATE old.valid_until       │  │
-│  │ 5. INSERT enterprise_state                 │  │
-│  │ 6. INSERT enterprise_state_transitions     │  │
-│  └────────────────────────────────────────────┘  │
-└──────────────────┬───────────────────────────────┘
-                   │ bitemporal rows
-                   ▼
-┌──────────────────────────────────────────────────┐
-│  Postgres 15  (5 tables, JSONB, partial UNIQUE)  │
-│  enterprise_state, enterprise_state_transitions, │
-│  review_queue, sources, entities                 │
-└──────────────────┬───────────────────────────────┘
-                   │ FastAPI Query
-                   ▼
-       GET /state | /state-as-of | /changes |
-       /risks-active   +   /ui  +  /docs
-```
+![End-to-end workflow](./diagrams/workflow.svg)
+
+The diagram above captures the same five stages as the source:
+
+1. **Fetch** — `src/edgar.py` pulls SEC filings via httpx (User-Agent + semaphore throttle).
+2. **Sectionize** — `src/parse.py` chunks PDF/HTML by Item (`Item 1`, `1A`, `7`, `7A`, `8`).
+3. **Extract** — `src/extract.py` calls OpenAI / Anthropic SDKs with Pydantic-validated tool-call schemas, producing canonical `FactBase` rows.
+4. **Merge** — `src/merge.py::merge_fact()` is the **only writer** to `enterprise_state`, enforced by the 5 invariants (advisory lock, idempotency, confidence gate, conflict detection, transition log).
+5. **Query** — FastAPI exposes `GET /state`, `/state-as-of`, `/changes`, `/risks-active` (+ `/ui` + `/docs`) over the Postgres 15 store.
 
 ### Pipeline run (PoC)
 
@@ -388,7 +352,8 @@ scheduled pipeline lands (news, transcripts) we'll revisit Airflow then.
 ├── .env.example
 ├── conftest.py                        # top-level path setup
 ├── diagrams/
-│   └── architecture.svg               # one-page architecture diagram
+│   ├── architecture.svg               # one-page architecture diagram
+│   └── workflow.svg                   # end-to-end ingestion workflow (5 stages)
 ├── docs/
 │   └── OUT_OF_SCOPE.md
 ├── src/
