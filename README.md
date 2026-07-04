@@ -62,6 +62,8 @@ invariants inside one Postgres transaction.
 | `tests/test_*.py` | 50 tests across 6 files (~875 LOC) |
 | `diagrams/architecture.svg` | One-page architecture diagram |
 | `diagrams/workflow.svg` | End-to-end ingestion workflow (5 numbered stages) |
+| `diagrams/project-structure.svg` | Module tree (colour-coded by REQ-region) |
+| `diagrams/file-layout.svg` | SPEC §16 file-layout diagram |
 | `docs/OUT_OF_SCOPE.md` | Explicit list of features **not** in v1 |
 | `SPEC.md` | Full 22K-char specification |
 | `Dockerfile` + `docker-compose.yml` | One-command spin-up (Postgres + app) |
@@ -339,51 +341,17 @@ scheduled pipeline lands (news, transcripts) we'll revisit Airflow then.
 
 ## Project structure
 
+![Project structure](./diagrams/project-structure.svg)
+
+The diagram colour-codes files by REQ-region: rose = invariant (`merge.py`, `schemas.py`), amber = extract step, cyan = API + ingest, violet = DB (sync psycopg2), slate = operational.
+
+For a text-search-friendly listing, the canonical full inventory is:
+
+```bash
+find . -not -path './.venv/*' -not -path './.git/*' -not -path '*/__pycache__/*' -not -path './.pytest_cache/*' -not -path './.planning/*' | sort
 ```
-.
-├── README.md                          # this file
-├── SPEC.md                            # Full specification (22K chars)
-├── ROADMAP.md                         # 7 GSD phase PLAN index
-├── OUT_OF_SCOPE.md → docs/OUT_OF_SCOPE.md
-├── Dockerfile
-├── docker-compose.yml                 # Postgres + app, healthcheck-gated
-├── requirements.txt
-├── pytest.ini
-├── .env.example
-├── conftest.py                        # top-level path setup
-├── diagrams/
-│   ├── architecture.svg               # one-page architecture diagram
-│   └── workflow.svg                   # end-to-end ingestion workflow (5 stages)
-├── docs/
-│   └── OUT_OF_SCOPE.md
-├── src/
-│   ├── __init__.py
-│   ├── schemas.py                     # REQ-01 — 8 Pydantic enterprise-object classes
-│   ├── merge.py                       # REQ-05..REQ-10 — the architectural invariant
-│   ├── extract.py                     # REQ-11 — LLM tool-calling extractor
-│   ├── parse.py                       # PDF + HTML parsers with section detection
-│   ├── edgar.py                       # SEC EDGAR sync + async ingest
-│   ├── api.py                         # FastAPI 5 endpoints + static UI mount
-│   ├── db.py                          # psycopg2 connection helper
-│   ├── seed.py                        # PoC seed (Microsoft FY24 baseline)
-│   ├── schema.sql                     # DDL — 5 tables, partial UNIQUE on current state
-│   └── static/
-│       └── index.html                 # API console (mounted at /ui)
-├── tests/
-│   ├── conftest.py
-│   ├── test_schemas.py                # 15 tests — all 8 schemas
-│   ├── test_merge.py                  #  9 tests — 5 invariants + REQ-05 grep
-│   ├── test_api.py                    #  7 tests — all 5 endpoints
-│   ├── test_extract.py                #  6 tests — tool-calling validation
-│   ├── test_parse.py                  #  8 tests — section detection
-│   ├── test_edgar.py                  #  4 tests — header + async semaphore
-│   └── fixtures/
-│       ├── msft_2024_10k_item1.html
-│       ├── amzn_2023_10k_item1a.html
-│       ├── sample_10k.html
-│       └── sample_10k.txt
-└── .planning/                         # 7 GSD phase PLAN files (gitignored on public)
-```
+
+Key files are listed in [`docs/OUT_OF_SCOPE.md`](./docs/OUT_OF_SCOPE.md).
 
 ---
 

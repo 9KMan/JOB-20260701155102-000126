@@ -283,32 +283,29 @@ Beyond v1 (engagement: 3-6 months): continuous ingest of new filings, temporal-d
 
 ## 16. File layout
 
+![File layout v1](./diagrams/file-layout.svg)
+
+The diagram maps every file to its REQ-id: rose = invariant core (`merge.py`, `schemas.py`), amber = extract (`extract.py`), cyan = API + ingest (`api.py`, `parse.py`, `edgar.py`), violet = DB (psycopg2 + schema.sql + seed.py), slate = root files.
+
+Visual region borders map to the load-order dependencies: `schemas.py` → `merge.py` → `extract.py` → `api.py` → `seed.py` → `tests/`.
+
+The canonical full listing is reproducible via:
+
+```bash
+find . -not -path './.venv/*' -not -path './.git/*' -not -path '*/__pycache__/*' -not -path './.pytest_cache/*' -not -path './.planning/*' | sort
 ```
-.
-├── README.md
-├── SPEC.md
-├── Dockerfile
-├── docker-compose.yml
-├── requirements.txt
-├── pytest.ini
-├── diagrams/
-│   └── architecture.svg
-├── src/
-│   ├── __init__.py
-│   ├── schemas.py           # REQ-01
-│   ├── merge.py             # REQ-05, REQ-06, REQ-07, REQ-08, REQ-09, REQ-10
-│   ├── extract.py           # REQ-11
-│   ├── parse.py             # PDF + HTML parsers
-│   ├── edgar.py             # SEC EDGAR ingest
-│   ├── api.py               # FastAPI app (REQ-12, REQ-13, REQ-14)
-│   ├── seed.py              # PoC seed: ingest MSFT + AMZN 10-Ks
-│   └── schema.sql           # REQ-03
-└── tests/
-    ├── __init__.py
-    ├── conftest.py          # in-memory SQLite or test Postgres
-    ├── test_schemas.py      # REQ-01, REQ-02
-    └── test_merge.py        # REQ-05..REQ-10
-```
+
+Key files (corresponding REQ ids in parens):
+
+- `src/schemas.py` — REQ-01 (8 Pydantic enterprise-object classes)
+- `src/merge.py` — REQ-05..REQ-10 (the architectural invariant)
+- `src/extract.py` — REQ-11 (LLM tool-calling extractor)
+- `src/api.py` — REQ-12..REQ-14 (FastAPI surface)
+- `src/schema.sql` — REQ-03 (DDL)
+- `tests/test_schemas.py` — REQ-01, REQ-02
+- `tests/test_merge.py` — REQ-05..REQ-10
+
+For a complete project overview (success criteria, stakeholder model), see [`docs/OUT_OF_SCOPE.md`](../docs/OUT_OF_SCOPE.md) and the README.
 
 ## 17. Open questions for CTO review
 

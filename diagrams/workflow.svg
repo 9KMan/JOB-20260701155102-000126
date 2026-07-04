@@ -2,11 +2,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 700" width="1100" height="700">
   <defs>
     <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/>
     </pattern>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
             markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
     </marker>
     <marker id="arrow-amber" viewBox="0 0 10 10" refX="9" refY="5"
             markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -21,18 +21,18 @@
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#a78bfa"/>
     </marker>
     <style>
-      .stage-name { font: 600 14px ui-monospace, "SF Mono", monospace; fill: #e2e8f0; }
+      .stage-name { font: 600 14px ui-monospace, "SF Mono", monospace; fill: #0f172a; }
       .stage-sub  { font: 10px ui-monospace, "SF Mono", monospace; fill: #94a3b8; }
-      .arrow-lbl  { font: 10px ui-monospace, "SF Mono", monospace; fill: #cbd5e1; }
-      .inv-text   { font: 10px ui-monospace, "SF Mono", monospace; fill: #fda4af; }
-      .title      { font: 700 18px ui-monospace, "SF Mono", monospace; fill: #e2e8f0; }
+      .arrow-lbl  { font: 10px ui-monospace, "SF Mono", monospace; fill: #1e293b; }
+      .inv-text   { font: 10px ui-monospace, "SF Mono", monospace; fill: #be123c; }
+      .title      { font: 700 18px ui-monospace, "SF Mono", monospace; fill: #0f172a; }
       .footnote   { font: 10px ui-monospace, "SF Mono", monospace; fill: #64748b; }
       .step-num   { font: 700 13px ui-monospace, "SF Mono", monospace; fill: #0f172a; }
     </style>
   </defs>
 
   <!-- Background -->
-  <rect width="1100" height="700" fill="#020617"/>
+  <rect width="1100" height="700" fill="#ffffff"/>
   <rect width="1100" height="700" fill="url(#grid)"/>
 
   <!-- Title -->
@@ -45,8 +45,8 @@
     <circle cx="100" cy="105" r="18" fill="#fbbf24"/>
     <text x="100" y="110" class="step-num" text-anchor="middle">1</text>
 
-    <rect x="40" y="135" width="160" height="60" rx="6" fill="#0f172a"/>
-    <rect x="40" y="135" width="160" height="60" rx="6" fill="rgba(30,41,59,0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+    <rect x="40" y="135" width="160" height="60" rx="6" fill="#f8fafc"/>
+    <rect x="40" y="135" width="160" height="60" rx="6" fill="rgba(30,41,59,0.5)" stroke="#334155" stroke-width="1.5"/>
     <text x="120" y="160" class="stage-name" text-anchor="middle">SEC EDGAR</text>
     <text x="120" y="177" class="stage-sub"  text-anchor="middle">httpx · async + sync · semaphore</text>
 
@@ -58,8 +58,8 @@
     <circle cx="340" cy="105" r="18" fill="#fbbf24"/>
     <text x="340" y="110" class="step-num" text-anchor="middle">2</text>
 
-    <rect x="280" y="135" width="160" height="60" rx="6" fill="#0f172a"/>
-    <rect x="280" y="135" width="160" height="60" rx="6" fill="rgba(30,41,59,0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+    <rect x="280" y="135" width="160" height="60" rx="6" fill="#f8fafc"/>
+    <rect x="280" y="135" width="160" height="60" rx="6" fill="rgba(30,41,59,0.5)" stroke="#334155" stroke-width="1.5"/>
     <text x="360" y="160" class="stage-name" text-anchor="middle">src/parse.py</text>
     <text x="360" y="177" class="stage-sub"  text-anchor="middle">pdfplumber · BeautifulSoup</text>
 
@@ -71,7 +71,7 @@
     <circle cx="580" cy="105" r="18" fill="#fbbf24"/>
     <text x="580" y="110" class="step-num" text-anchor="middle">3</text>
 
-    <rect x="520" y="135" width="160" height="60" rx="6" fill="#0f172a"/>
+    <rect x="520" y="135" width="160" height="60" rx="6" fill="#f8fafc"/>
     <rect x="520" y="135" width="160" height="60" rx="6" fill="rgba(251,191,36,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
     <text x="600" y="160" class="stage-name" text-anchor="middle">src/extract.py</text>
     <text x="600" y="177" class="stage-sub"  text-anchor="middle">OpenAI · Anthropic SDKs</text>
@@ -84,9 +84,9 @@
     <circle cx="820" cy="105" r="18" fill="#fb7185"/>
     <text x="820" y="110" class="step-num" text-anchor="middle">4</text>
 
-    <rect x="720" y="115" width="220" height="100" rx="8" fill="#0f172a"/>
+    <rect x="720" y="115" width="220" height="100" rx="8" fill="#f8fafc"/>
     <rect x="720" y="115" width="220" height="100" rx="8" fill="rgba(251,113,133,0.25)" stroke="#fb7185" stroke-width="3"/>
-    <text x="830" y="140" class="stage-name" fill="#fda4af" text-anchor="middle">merge_fact() — ONE writer</text>
+    <text x="830" y="140" class="stage-name" fill="#be123c" text-anchor="middle">merge_fact() — ONE writer</text>
     <text x="830" y="158" class="stage-sub"  text-anchor="middle">the only writer to enterprise_state</text>
 
     <!-- 6-step invariant list inside the box -->
@@ -97,7 +97,7 @@
 
   <!-- Postgres 15 database — bottom-center, spans the bottom -->
   <g>
-    <rect x="640" y="350" width="320" height="120" rx="6" fill="#0f172a"/>
+    <rect x="640" y="350" width="320" height="120" rx="6" fill="#f8fafc"/>
     <rect x="640" y="350" width="320" height="120" rx="6" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
     <text x="800" y="375" class="stage-name" text-anchor="middle">Postgres 15  (5 tables · JSONB · partial UNIQUE)</text>
 
@@ -108,17 +108,17 @@
 
     <!-- merge → DB write arrow -->
     <line x1="830" y1="215" x2="800" y2="350" stroke="#fb7185" stroke-width="3" marker-end="url(#arrow-rose)"/>
-    <text x="850" y="290" class="inv-text" fill="#fda4af">INSERT (with invariants)</text>
+    <text x="850" y="290" class="inv-text" fill="#be123c">INSERT (with invariants)</text>
   </g>
 
   <!-- Step 5: FastAPI Query — bottom-right -->
   <g>
     <circle cx="980" cy="540" r="18" fill="#a78bfa"/>
-    <text x="980" y="545" class="step-num" text-anchor="middle" fill="#0f172a">5</text>
+    <text x="980" y="545" class="step-num" text-anchor="middle" fill="#f8fafc">5</text>
 
-    <rect x="900" y="570" width="160" height="80" rx="6" fill="#0f172a"/>
+    <rect x="900" y="570" width="160" height="80" rx="6" fill="#f8fafc"/>
     <rect x="900" y="570" width="160" height="80" rx="6" fill="rgba(52,211,153,0.15)" stroke="#34d399" stroke-width="1.5"/>
-    <text x="980" y="595" class="stage-name" fill="#6ee7b7" text-anchor="middle">FastAPI Query</text>
+    <text x="980" y="595" class="stage-name" fill="#047857" text-anchor="middle">FastAPI Query</text>
     <text x="980" y="613" class="stage-sub"  text-anchor="middle">GET /state · /state-as-of</text>
     <text x="980" y="627" class="stage-sub"  text-anchor="middle">/changes · /risks-active</text>
     <text x="980" y="641" class="footnote"   text-anchor="middle">+ /ui  +  /docs</text>
@@ -140,8 +140,8 @@
   <text x="700" y="155" class="arrow-lbl" fill="#fbbf24" text-anchor="middle">FactBase rows</text>
 
   <!-- Footer with one-line diagram summary -->
-  <rect x="40" y="640" width="500" height="40" rx="6" fill="#0f172a"/>
-  <rect x="40" y="640" width="500" height="40" rx="6" fill="rgba(30,41,59,0.5)" stroke="#94a3b8" stroke-width="1"/>
-  <text x="60" y="660" class="footnote" fill="#cbd5e1">SEC EDGAR (httpx + semaphore)</text>
-  <text x="60" y="673" class="footnote" fill="#cbd5e1">  → src/parse (pdfplumber, BS4) → src/extract (raw SDK + Pydantic)</text>
+  <rect x="40" y="640" width="500" height="40" rx="6" fill="#f8fafc"/>
+  <rect x="40" y="640" width="500" height="40" rx="6" fill="rgba(30,41,59,0.5)" stroke="#334155" stroke-width="1"/>
+  <text x="60" y="660" class="footnote" fill="#1e293b">SEC EDGAR (httpx + semaphore)</text>
+  <text x="60" y="673" class="footnote" fill="#1e293b">  → src/parse (pdfplumber, BS4) → src/extract (raw SDK + Pydantic)</text>
 </svg>
