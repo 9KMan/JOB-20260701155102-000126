@@ -1,94 +1,66 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 460" width="800" height="460">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" width="800" height="480">
   <defs>
-    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/>
-    </pattern>
     <style>
-      .root       { font: 700 16px ui-monospace, "SF Mono", monospace; fill: #0f172a; }
-      .dir-name   { font: 700 12px ui-monospace, "SF Mono", monospace; fill: #0f172a; }
-      .file-name  { font: 11px ui-monospace, "SF Mono", monospace; fill: #1e293b; }
-      .file-meta  { font: 10px ui-monospace, "SF Mono", monospace; fill: #94a3b8; }
-      .footnote   { font: 10px ui-monospace, "SF Mono", monospace; fill: #64748b; }
+
+      .title     { font: 700 18px 'Inter', sans-serif; fill: #0F172A; }
+      .subtitle  { font: 11px 'Inter', sans-serif; fill: #64748B; }
+      .node-name { font: 600 13px 'Inter', sans-serif; fill: #0F172A; }
+      .node-sub  { font: 10px 'Inter', sans-serif; fill: #64748B; }
+      .edge-lbl  { font: 500 10px 'Inter', sans-serif; fill: #64748B; }
+      .footnote  { font: 10px 'Inter', sans-serif; fill: #64748B; opacity: 0.75; }
     </style>
+    <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748B"/>
+    </marker>
   </defs>
-
-  <rect width="800" height="460" fill="#ffffff"/>
-  <rect width="800" height="460" fill="url(#grid)"/>
-
-  <text x="40" y="34" class="root">File layout (v1)</text>
-  <text x="40" y="52" class="footnote">Persistent Reasoning Engine — SPEC §16 — REQ mappings preserved from the canonical source</text>
-
-  <!-- src/ -->
-  <g>
-    <rect x="40" y="80" width="380" height="350" rx="6" fill="#f8fafc"/>
-    <rect x="40" y="80" width="380" height="350" rx="6" fill="rgba(34,211,238,0.1)" stroke="#22d3ee" stroke-width="1.5"/>
-    <text x="60" y="108" class="dir-name" fill="#0e7490">src/</text>
-
-    <rect x="60" y="125" width="340" height="22" rx="3" fill="rgba(251,113,133,0.18)" stroke="#fb7185" stroke-width="0.4"/>
-    <text x="75" y="141" class="file-name" fill="#be123c">schemas.py</text>
-    <text x="160" y="141" class="file-meta">REQ-01</text>
-
-    <rect x="60" y="155" width="340" height="22" rx="3" fill="rgba(251,113,133,0.18)" stroke="#fb7185" stroke-width="0.4"/>
-    <text x="75" y="171" class="file-name" fill="#be123c">merge.py</text>
-    <text x="160" y="171" class="file-meta">REQ-05..REQ-10 (the architectural invariant)</text>
-
-    <rect x="60" y="185" width="340" height="22" rx="3" fill="rgba(251,191,36,0.15)" stroke="#fbbf24" stroke-width="0.4"/>
-    <text x="75" y="201" class="file-name" fill="#a16207">extract.py</text>
-    <text x="160" y="201" class="file-meta">REQ-11</text>
-
-    <rect x="60" y="215" width="340" height="22" rx="3" fill="rgba(30,41,59,0.5)" stroke="#334155" stroke-width="0.4"/>
-    <text x="75" y="231" class="file-name">parse.py</text>
-    <text x="160" y="231" class="file-meta">PDF + HTML parsers</text>
-
-    <rect x="60" y="245" width="340" height="22" rx="3" fill="rgba(30,41,59,0.5)" stroke="#334155" stroke-width="0.4"/>
-    <text x="75" y="261" class="file-name">edgar.py</text>
-    <text x="160" y="261" class="file-meta">SEC EDGAR ingest</text>
-
-    <rect x="60" y="275" width="340" height="22" rx="3" fill="rgba(167,139,250,0.15)" stroke="#a78bfa" stroke-width="0.4"/>
-    <text x="75" y="291" class="file-name">api.py</text>
-    <text x="160" y="291" class="file-meta">REQ-12, REQ-13, REQ-14</text>
-
-    <rect x="60" y="305" width="340" height="22" rx="3" fill="rgba(251,191,36,0.1)" stroke="#fbbf24" stroke-width="0.4"/>
-    <text x="75" y="321" class="file-name">seed.py</text>
-    <text x="160" y="321" class="file-meta">PoC seed: MSFT + AMZN 10-Ks</text>
-
-    <rect x="60" y="335" width="340" height="22" rx="3" fill="rgba(76,29,149,0.18)" stroke="#a78bfa" stroke-width="0.4"/>
-    <text x="75" y="351" class="file-name">schema.sql</text>
-    <text x="160" y="351" class="file-meta">REQ-03</text>
-  </g>
-
-  <!-- tests/ -->
-  <g>
-    <rect x="440" y="80" width="320" height="200" rx="6" fill="#f8fafc"/>
-    <rect x="440" y="80" width="320" height="200" rx="6" fill="rgba(167,139,250,0.1)" stroke="#a78bfa" stroke-width="1.5"/>
-    <text x="460" y="108" class="dir-name" fill="#6d28d9">tests/</text>
-
-    <text x="460" y="138" class="file-name">conftest.py</text>
-    <text x="460" y="156" class="file-meta">in-memory SQLite or test Postgres</text>
-
-    <text x="460" y="184" class="file-name">test_schemas.py</text>
-    <text x="460" y="202" class="file-meta">REQ-01, REQ-02 — schema validation</text>
-
-    <text x="460" y="230" class="file-name">test_merge.py</text>
-    <text x="460" y="248" class="file-meta">REQ-05..REQ-10 — invariants</text>
-
-    <text x="460" y="270" class="file-name">__init__.py</text>
-  </g>
-
-  <!-- top-level + diagrams/ -->
-  <g>
-    <rect x="440" y="295" width="320" height="135" rx="6" fill="#f8fafc"/>
-    <rect x="440" y="295" width="320" height="135" rx="6" fill="rgba(30,41,59,0.5)" stroke="#334155" stroke-width="1.5"/>
-    <text x="460" y="320" class="dir-name">. (repo root)</text>
-
-    <text x="460" y="343" class="file-name">README.md · SPEC.md · Dockerfile</text>
-    <text x="460" y="357" class="file-name">docker-compose.yml · requirements.txt</text>
-    <text x="460" y="371" class="file-name">pytest.ini · diagrams/architecture.svg</text>
-
-    <text x="460" y="395" class="file-name">diagrams/</text>
-    <text x="540" y="395" class="file-meta">architecture.svg · workflow.svg · project-structure.svg · file-layout.svg (this)</text>
-
-    <text x="460" y="418" class="footnote">.planning/  (7 GSD phase PLAN files — gitignored from public release)</text>
-  </g>
+  <rect width="800" height="480" fill="#FFFFFF"/>
+  <text x="40" y="38" class="title">File Layout · SPEC §16</text>
+  <text x="40" y="58" class="subtitle">REQ-id mappings preserved from the canonical source</text>
+  <rect x="40" y="90" width="200" height="90" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+  <rect x="40" y="90" width="4" height="90" rx="2" fill="#64748B"/>
+  <text x="56" y="112" class="node-name">Repository root</text>
+  <text x="56" y="128" class="node-sub">README · SPEC · Dockerfile</text>
+  <rect x="280" y="90" width="460" height="90" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+  <rect x="280" y="90" width="4" height="90" rx="2" fill="#E11D48"/>
+  <text x="296" y="112" class="node-name">src/</text>
+  <text x="296" y="128" class="node-sub">Python package</text>
+  <rect x="280" y="200" width="220" height="60" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+  <rect x="280" y="200" width="4" height="60" rx="2" fill="#E11D48"/>
+  <text x="296" y="222" class="node-name">schemas.py</text>
+  <text x="296" y="238" class="node-sub">REQ-01 · 8 Pydantic classes</text>
+  <rect x="280" y="275" width="220" height="60" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+  <rect x="280" y="275" width="4" height="60" rx="2" fill="#E11D48"/>
+  <text x="296" y="297" class="node-name">merge.py</text>
+  <text x="296" y="313" class="node-sub">REQ-05..REQ-10 · invariant</text>
+  <rect x="280" y="350" width="220" height="60" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+  <rect x="280" y="350" width="4" height="60" rx="2" fill="#F97316"/>
+  <text x="296" y="372" class="node-name">extract.py</text>
+  <text x="296" y="388" class="node-sub">REQ-11 · LLM tool-call</text>
+  <rect x="520" y="200" width="220" height="60" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+  <rect x="520" y="200" width="4" height="60" rx="2" fill="#2563EB"/>
+  <text x="536" y="222" class="node-name">api.py</text>
+  <text x="536" y="238" class="node-sub">REQ-12, REQ-13, REQ-14</text>
+  <rect x="520" y="275" width="220" height="60" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+  <rect x="520" y="275" width="4" height="60" rx="2" fill="#0E7490"/>
+  <text x="536" y="297" class="node-name">schema.sql</text>
+  <text x="536" y="313" class="node-sub">REQ-03 · DDL</text>
+  <rect x="520" y="350" width="220" height="60" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+  <rect x="520" y="350" width="4" height="60" rx="2" fill="#64748B"/>
+  <text x="536" y="372" class="node-name">seed.py</text>
+  <text x="536" y="388" class="node-sub">PoC MSFT/AMZN seed</text>
+  <rect x="40" y="200" width="200" height="90" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+  <rect x="40" y="200" width="4" height="90" rx="2" fill="#0E7490"/>
+  <text x="56" y="222" class="node-name">tests/</text>
+  <text x="56" y="238" class="node-sub">pytest · 50 tests</text>
+  <rect x="40" y="305" width="200" height="60" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+  <rect x="40" y="305" width="4" height="60" rx="2" fill="#2563EB"/>
+  <text x="56" y="327" class="node-name">test_schemas.py</text>
+  <text x="56" y="343" class="node-sub">15 tests · all 8 schemas</text>
+  <rect x="40" y="380" width="200" height="60" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+  <rect x="40" y="380" width="4" height="60" rx="2" fill="#2563EB"/>
+  <text x="56" y="402" class="node-name">test_merge.py</text>
+  <text x="56" y="418" class="node-sub">9 tests · 5 invariants</text>
+  <line x1="240" y1="135" x2="280" y2="135" stroke="#64748B" stroke-width="1.4" marker-end="url(#arrB)"/>
+  <line x1="240" y1="245" x2="280" y2="245" stroke="#64748B" stroke-width="1.4" marker-end="url(#arrB)"/>
 </svg>

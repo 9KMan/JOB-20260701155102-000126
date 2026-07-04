@@ -1,147 +1,97 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 700" width="1100" height="700">
   <defs>
-    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/>
-    </pattern>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
-            markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
-    </marker>
-    <marker id="arrow-amber" viewBox="0 0 10 10" refX="9" refY="5"
-            markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#fbbf24"/>
-    </marker>
-    <marker id="arrow-rose" viewBox="0 0 10 10" refX="9" refY="5"
-            markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#fb7185"/>
-    </marker>
-    <marker id="arrow-violet" viewBox="0 0 10 10" refX="9" refY="5"
-            markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#a78bfa"/>
-    </marker>
     <style>
-      .stage-name { font: 600 14px ui-monospace, "SF Mono", monospace; fill: #0f172a; }
-      .stage-sub  { font: 10px ui-monospace, "SF Mono", monospace; fill: #94a3b8; }
-      .arrow-lbl  { font: 10px ui-monospace, "SF Mono", monospace; fill: #1e293b; }
-      .inv-text   { font: 10px ui-monospace, "SF Mono", monospace; fill: #be123c; }
-      .title      { font: 700 18px ui-monospace, "SF Mono", monospace; fill: #0f172a; }
-      .footnote   { font: 10px ui-monospace, "SF Mono", monospace; fill: #64748b; }
-      .step-num   { font: 700 13px ui-monospace, "SF Mono", monospace; fill: #0f172a; }
+
+      .title     { font: 700 18px 'Inter', sans-serif; fill: #1E3A8A; }
+      .subtitle  { font: 11px 'Inter', sans-serif; fill: #6B7280; }
+      .node-name { font: 600 13px 'Inter', sans-serif; fill: #1E3A8A; }
+      .node-sub  { font: 10px 'Inter', sans-serif; fill: #6B7280; }
+      .edge-lbl  { font: 600 10px 'Inter', sans-serif; fill: #F97316; }
+      .footnote  { font: 10px 'Inter', sans-serif; fill: #6B7280; }
+      .stage-tag { font: 700 11px 'Inter', sans-serif; fill: #F97316; letter-spacing: 1.2px; }
     </style>
+    <linearGradient id="edgeGlowC" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#F97316" stop-opacity="0.2"/>
+      <stop offset="50%"  stop-color="#F97316" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#F97316" stop-opacity="0.2"/>
+    </linearGradient>
   </defs>
-
-  <!-- Background -->
-  <rect width="1100" height="700" fill="#ffffff"/>
-  <rect width="1100" height="700" fill="url(#grid)"/>
-
-  <!-- Title -->
-  <text x="40" y="36" class="title">Persistent Reasoning Engine — End-to-End Ingestion Workflow</text>
-  <text x="40" y="56" class="footnote">SEC EDGAR fetch → parse → LLM extract → merge_fact (only writer) → Postgres 15 → FastAPI query</text>
-
-  <!-- Step 1: EDGAR ingest (External) — leftmost, vertical stack -->
-  <g>
-    <!-- Label badge with step number -->
-    <circle cx="100" cy="105" r="18" fill="#fbbf24"/>
-    <text x="100" y="110" class="step-num" text-anchor="middle">1</text>
-
-    <rect x="40" y="135" width="160" height="60" rx="6" fill="#f8fafc"/>
-    <rect x="40" y="135" width="160" height="60" rx="6" fill="rgba(30,41,59,0.5)" stroke="#334155" stroke-width="1.5"/>
-    <text x="120" y="160" class="stage-name" text-anchor="middle">SEC EDGAR</text>
-    <text x="120" y="177" class="stage-sub"  text-anchor="middle">httpx · async + sync · semaphore</text>
-
-    <text x="120" y="215" class="arrow-lbl" fill="#fbbf24" text-anchor="middle">User-Agent + throttle</text>
-  </g>
-
-  <!-- Step 2: Parse sectionizer — middle-left, vertical -->
-  <g>
-    <circle cx="340" cy="105" r="18" fill="#fbbf24"/>
-    <text x="340" y="110" class="step-num" text-anchor="middle">2</text>
-
-    <rect x="280" y="135" width="160" height="60" rx="6" fill="#f8fafc"/>
-    <rect x="280" y="135" width="160" height="60" rx="6" fill="rgba(30,41,59,0.5)" stroke="#334155" stroke-width="1.5"/>
-    <text x="360" y="160" class="stage-name" text-anchor="middle">src/parse.py</text>
-    <text x="360" y="177" class="stage-sub"  text-anchor="middle">pdfplumber · BeautifulSoup</text>
-
-    <text x="360" y="215" class="arrow-lbl" fill="#fbbf24" text-anchor="middle">Item 1, 1A, 7, 7A, 8</text>
-  </g>
-
-  <!-- Step 3: LLM extract — middle, vertical -->
-  <g>
-    <circle cx="580" cy="105" r="18" fill="#fbbf24"/>
-    <text x="580" y="110" class="step-num" text-anchor="middle">3</text>
-
-    <rect x="520" y="135" width="160" height="60" rx="6" fill="#f8fafc"/>
-    <rect x="520" y="135" width="160" height="60" rx="6" fill="rgba(251,191,36,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
-    <text x="600" y="160" class="stage-name" text-anchor="middle">src/extract.py</text>
-    <text x="600" y="177" class="stage-sub"  text-anchor="middle">OpenAI · Anthropic SDKs</text>
-
-    <text x="600" y="215" class="arrow-lbl" fill="#fbbf24" text-anchor="middle">Pydantic tool-call schema</text>
-  </g>
-
-  <!-- Step 4: merge_fact — emphasised rose box, central — THE INVARIANT -->
-  <g>
-    <circle cx="820" cy="105" r="18" fill="#fb7185"/>
-    <text x="820" y="110" class="step-num" text-anchor="middle">4</text>
-
-    <rect x="720" y="115" width="220" height="100" rx="8" fill="#f8fafc"/>
-    <rect x="720" y="115" width="220" height="100" rx="8" fill="rgba(251,113,133,0.25)" stroke="#fb7185" stroke-width="3"/>
-    <text x="830" y="140" class="stage-name" fill="#be123c" text-anchor="middle">merge_fact() — ONE writer</text>
-    <text x="830" y="158" class="stage-sub"  text-anchor="middle">the only writer to enterprise_state</text>
-
-    <!-- 6-step invariant list inside the box -->
-    <text x="735" y="180" class="inv-text">1. pg_advisory_xact_lock(entity_id)            — serialises</text>
-    <text x="735" y="194" class="inv-text">2. SELECT existing on (entity,category,…)?</text>
-    <text x="735" y="208" class="inv-text">3. confidence &lt; 0.6 → INSERT review_queue</text>
-  </g>
-
-  <!-- Postgres 15 database — bottom-center, spans the bottom -->
-  <g>
-    <rect x="640" y="350" width="320" height="120" rx="6" fill="#f8fafc"/>
-    <rect x="640" y="350" width="320" height="120" rx="6" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
-    <text x="800" y="375" class="stage-name" text-anchor="middle">Postgres 15  (5 tables · JSONB · partial UNIQUE)</text>
-
-    <text x="655" y="400" class="stage-sub">·  enterprise_state                  (bitemporal rows)</text>
-    <text x="655" y="416" class="stage-sub">·  enterprise_state_transitions   (audit log)</text>
-    <text x="655" y="432" class="stage-sub">·  review_queue</text>
-    <text x="655" y="448" class="stage-sub">·  sources    ·  entities</text>
-
-    <!-- merge → DB write arrow -->
-    <line x1="830" y1="215" x2="800" y2="350" stroke="#fb7185" stroke-width="3" marker-end="url(#arrow-rose)"/>
-    <text x="850" y="290" class="inv-text" fill="#be123c">INSERT (with invariants)</text>
-  </g>
-
-  <!-- Step 5: FastAPI Query — bottom-right -->
-  <g>
-    <circle cx="980" cy="540" r="18" fill="#a78bfa"/>
-    <text x="980" y="545" class="step-num" text-anchor="middle" fill="#f8fafc">5</text>
-
-    <rect x="900" y="570" width="160" height="80" rx="6" fill="#f8fafc"/>
-    <rect x="900" y="570" width="160" height="80" rx="6" fill="rgba(52,211,153,0.15)" stroke="#34d399" stroke-width="1.5"/>
-    <text x="980" y="595" class="stage-name" fill="#047857" text-anchor="middle">FastAPI Query</text>
-    <text x="980" y="613" class="stage-sub"  text-anchor="middle">GET /state · /state-as-of</text>
-    <text x="980" y="627" class="stage-sub"  text-anchor="middle">/changes · /risks-active</text>
-    <text x="980" y="641" class="footnote"   text-anchor="middle">+ /ui  +  /docs</text>
-
-    <!-- DB → query read arrow -->
-    <line x1="900" y1="430" x2="940" y2="570" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrow-violet)"/>
-  </g>
-
-  <!-- Stage-1 → Stage-2 arrows -->
-  <line x1="200" y1="165" x2="280" y2="165" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrow-amber)"/>
-  <text x="240" y="155" class="arrow-lbl" fill="#fbbf24" text-anchor="middle">1. fetch</text>
-
-  <!-- Stage-2 → Stage-3 arrows -->
-  <line x1="440" y1="165" x2="520" y2="165" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrow-amber)"/>
-  <text x="480" y="155" class="arrow-lbl" fill="#fbbf24" text-anchor="middle">2. sectionize</text>
-
-  <!-- Stage-3 → merge_fact -->
-  <line x1="680" y1="165" x2="720" y2="165" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrow-amber)"/>
-  <text x="700" y="155" class="arrow-lbl" fill="#fbbf24" text-anchor="middle">FactBase rows</text>
-
-  <!-- Footer with one-line diagram summary -->
-  <rect x="40" y="640" width="500" height="40" rx="6" fill="#f8fafc"/>
-  <rect x="40" y="640" width="500" height="40" rx="6" fill="rgba(30,41,59,0.5)" stroke="#334155" stroke-width="1"/>
-  <text x="60" y="660" class="footnote" fill="#1e293b">SEC EDGAR (httpx + semaphore)</text>
-  <text x="60" y="673" class="footnote" fill="#1e293b">  → src/parse (pdfplumber, BS4) → src/extract (raw SDK + Pydantic)</text>
+  <rect width="1100" height="700" fill="#FFFFFF"/>
+  <text x="40" y="38" class="title">Persistent Reasoning Engine · End-to-End Data Pipeline</text>
+  <text x="40" y="58" class="subtitle">SEC EDGAR → sectionize → LLM extract → merge_fact (only writer) → Postgres 15 → temporal query</text>
+  <rect x="40" y="110" width="160" height="110" rx="6" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1.2"/>
+  <rect x="40" y="110" width="160" height="6" rx="3" fill="#3B82F6"/>
+  <rect x="40" y="113" width="160" height="3" fill="#3B82F6"/>
+  <text x="54" y="134" class="stage-tag">01 · SOURCE</text>
+  <text x="54" y="156" class="node-name">SEC EDGAR</text>
+  <text x="54" y="174" class="node-sub">httpx · semaphore</text>
+  <rect x="230" y="110" width="160" height="110" rx="6" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1.2"/>
+  <rect x="230" y="110" width="160" height="6" rx="3" fill="#3B82F6"/>
+  <rect x="230" y="113" width="160" height="3" fill="#3B82F6"/>
+  <text x="244" y="134" class="stage-tag">02 · INGEST</text>
+  <text x="244" y="156" class="node-name">Fetch 10-K</text>
+  <text x="244" y="174" class="node-sub">User-Agent + throttle</text>
+  <rect x="420" y="110" width="160" height="110" rx="6" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1.2"/>
+  <rect x="420" y="110" width="160" height="6" rx="3" fill="#F97316"/>
+  <rect x="420" y="113" width="160" height="3" fill="#F97316"/>
+  <text x="434" y="134" class="stage-tag">03 · TRANSFORM</text>
+  <text x="434" y="156" class="node-name">Parse sections</text>
+  <text x="434" y="174" class="node-sub">Item 1 / 1A / 7 / 8</text>
+  <rect x="610" y="110" width="160" height="110" rx="6" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1.2"/>
+  <rect x="610" y="110" width="160" height="6" rx="3" fill="#F97316"/>
+  <rect x="610" y="113" width="160" height="3" fill="#F97316"/>
+  <text x="624" y="134" class="stage-tag">04 · EXTRACT</text>
+  <text x="624" y="156" class="node-name">Extract facts</text>
+  <text x="624" y="174" class="node-sub">Pydantic tool-call</text>
+  <rect x="800" y="110" width="160" height="110" rx="6" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1.2"/>
+  <rect x="800" y="110" width="160" height="6" rx="3" fill="#EA580C"/>
+  <rect x="800" y="113" width="160" height="3" fill="#EA580C"/>
+  <text x="814" y="134" class="stage-tag">05 · INVARIANT</text>
+  <text x="814" y="156" class="node-name">merge_fact()</text>
+  <text x="814" y="174" class="node-sub">the ONLY writer</text>
+  <ellipse cx="880" cy="362.0" rx="90.0" ry="14" fill="#FFFFFF" stroke="#1E3A8A" stroke-width="1.6"/>
+  <path d="M 790.0 362.0
+           v 36
+           a 90.0 14 0 0 0 180.0 0
+           v -36" fill="#FFFFFF" stroke="#1E3A8A" stroke-width="1.6"/>
+  <text x="880" y="420.0" class="node-name" text-anchor="middle">Postgres 15</text>
+  <text x="880" y="436.0" class="node-sub" text-anchor="middle">bitemporal · JSONB</text>
+  <rect x="800" y="470" width="260" height="110" rx="6" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1.2"/>
+  <rect x="800" y="470" width="260" height="6" rx="3" fill="#3B82F6"/>
+  <rect x="800" y="473" width="260" height="3" fill="#3B82F6"/>
+  <text x="814" y="494" class="stage-tag">06 · QUERY</text>
+  <text x="814" y="516" class="node-name">FastAPI · 5 query endpoints</text>
+  <defs>
+    <marker id="arrC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#F97316"/>
+    </marker>
+  </defs>
+  <line x1="200" y1="165" x2="230" y2="165" stroke="#1E3A8A" stroke-width="2" marker-end="url(#arrC)"/>
+  <defs>
+    <marker id="arrC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#F97316"/>
+    </marker>
+  </defs>
+  <line x1="390" y1="165" x2="420" y2="165" stroke="#1E3A8A" stroke-width="2" marker-end="url(#arrC)"/>
+  <defs>
+    <marker id="arrC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#F97316"/>
+    </marker>
+  </defs>
+  <line x1="580" y1="165" x2="610" y2="165" stroke="#1E3A8A" stroke-width="2" marker-end="url(#arrC)"/>
+  <defs>
+    <marker id="arrC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#F97316"/>
+    </marker>
+  </defs>
+  <line x1="770" y1="165" x2="800" y2="165" stroke="#1E3A8A" stroke-width="2" marker-end="url(#arrC)"/>
+  <line x1="880" y1="220" x2="880" y2="345" stroke="#1E3A8A" stroke-width="2.4"/>
+  <path d="M 875 340 l 5 8 l 5 -8 z" fill="#F97316"/>
+  <text x="895" y="290" class="edge-lbl">INSERT</text>
+  <line x1="880" y1="410" x2="880" y2="470" stroke="#6B7280" stroke-width="1.6" stroke-dasharray="4 3"/>
+  <text x="900" y="445" class="footnote">read</text>
+  <rect x="40" y="610" width="1020" height="70" rx="6" fill="#F9FAFB" stroke="#E5E7EB" stroke-width="1"/>
+  <text x="60" y="632" class="node-name">5 invariants of merge_fact()  ·  ONE writer to enterprise_state</text>
+  <text x="60" y="652" class="node-sub">1. pg_advisory_xact_lock(entity_id)  ·  2. idempotency  ·  3. confidence gate &lt; 0.6 → review_queue  ·  4. conflict detection  ·  5. transition log</text>
 </svg>

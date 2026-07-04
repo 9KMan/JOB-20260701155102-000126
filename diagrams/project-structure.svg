@@ -1,120 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700" width="900" height="700">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 580" width="900" height="580">
   <defs>
-    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/>
-    </pattern>
     <style>
-      .root       { font: 700 18px ui-monospace, "SF Mono", monospace; fill: #0f172a; }
-      .dir-name   { font: 700 13px ui-monospace, "SF Mono", monospace; fill: #0f172a; }
-      .file-name  { font: 11px ui-monospace, "SF Mono", monospace; fill: #1e293b; }
-      .file-meta  { font: 10px ui-monospace, "SF Mono", monospace; fill: #94a3b8; }
-      .footnote   { font: 10px ui-monospace, "SF Mono", monospace; fill: #64748b; }
+
+      .title     { font: 700 18px 'Inter', sans-serif; fill: #0F172A; }
+      .subtitle  { font: 11px 'Inter', sans-serif; fill: #64748B; }
+      .node-name { font: 600 13px 'Inter', sans-serif; fill: #0F172A; }
+      .node-sub  { font: 10px 'Inter', sans-serif; fill: #64748B; }
+      .edge-lbl  { font: 500 10px 'Inter', sans-serif; fill: #64748B; }
+      .footnote  { font: 10px 'Inter', sans-serif; fill: #64748B; opacity: 0.75; }
     </style>
+    <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748B"/>
+    </marker>
   </defs>
-
-  <rect width="900" height="700" fill="#ffffff"/>
-  <rect width="900" height="700" fill="url(#grid)"/>
-
-  <text x="40" y="34" class="root">Project structure</text>
-  <text x="40" y="54" class="footnote">JOB-20260701155102-000126 — Persistent Reasoning Engine (FastAPI + psycopg2 + pgvector-style bitemporal tables)</text>
-
-  <!-- top-level files -->
-  <g>
-    <rect x="40" y="80" width="820" height="50" rx="6" fill="#f8fafc"/>
-    <rect x="40" y="80" width="820" height="50" rx="6" fill="rgba(30,41,59,0.5)" stroke="#334155" stroke-width="1"/>
-    <text x="60" y="110" class="dir-name">. (repo root)</text>
-    <text x="200" y="110" class="file-meta">README · SPEC · ROADMAP · OUT_OF_SCOPE · Dockerfile · docker-compose.yml · requirements.txt · pytest.ini · .env.example · conftest.py</text>
-  </g>
-
-  <!-- src/ region -->
-  <g>
-    <rect x="40" y="150" width="500" height="380" rx="6" fill="#f8fafc"/>
-    <rect x="40" y="150" width="500" height="380" rx="6" fill="rgba(34,211,238,0.1)" stroke="#22d3ee" stroke-width="1.5"/>
-    <text x="60" y="178" class="dir-name" fill="#0e7490">src/  (Python package)</text>
-
-    <rect x="60" y="195" width="460" height="30" rx="4" fill="rgba(251,113,133,0.18)" stroke="#fb7185" stroke-width="0.5"/>
-    <text x="75" y="215" class="file-name" fill="#be123c">merge.py</text>
-    <text x="155" y="215" class="file-meta">REQ-05..REQ-10 — the architectural invariant (ONLY writer to enterprise_state)</text>
-
-    <rect x="60" y="235" width="460" height="30" rx="4" fill="rgba(251,113,133,0.12)" stroke="#fb7185" stroke-width="0.5"/>
-    <text x="75" y="255" class="file-name" fill="#be123c">schemas.py</text>
-    <text x="170" y="255" class="file-meta">REQ-01 — 8 Pydantic enterprise-object classes (FactBase + 8 children)</text>
-
-    <rect x="60" y="275" width="460" height="30" rx="4" fill="rgba(251,191,36,0.15)" stroke="#fbbf24" stroke-width="0.5"/>
-    <text x="75" y="295" class="file-name" fill="#a16207">extract.py</text>
-    <text x="170" y="295" class="file-meta">REQ-11 — LLM tool-calling extractor (raw OpenAI/Anthropic SDKs)</text>
-
-    <rect x="60" y="315" width="460" height="30" rx="4" fill="rgba(30,41,59,0.5)" stroke="#334155" stroke-width="0.5"/>
-    <text x="75" y="335" class="file-name">parse.py</text>
-    <text x="160" y="335" class="file-meta">PDF (pdfplumber) + HTML (BeautifulSoup) section parsers</text>
-
-    <rect x="60" y="355" width="460" height="30" rx="4" fill="rgba(30,41,59,0.5)" stroke="#334155" stroke-width="0.5"/>
-    <text x="75" y="375" class="file-name">edgar.py</text>
-    <text x="160" y="375" class="file-meta">SEC EDGAR sync + async ingest (User-Agent + semaphore)</text>
-
-    <rect x="60" y="395" width="460" height="30" rx="4" fill="rgba(167,139,250,0.15)" stroke="#a78bfa" stroke-width="0.5"/>
-    <text x="75" y="415" class="file-name">api.py</text>
-    <text x="160" y="415" class="file-meta">FastAPI 5 endpoints + static UI mount (REQ-14..REQ-17)</text>
-
-    <rect x="60" y="435" width="460" height="30" rx="4" fill="rgba(76,29,149,0.18)" stroke="#a78bfa" stroke-width="0.5"/>
-    <text x="75" y="455" class="file-name">db.py</text>
-    <text x="135" y="455" class="file-meta">psycopg2 connection helper (sync, advisory-lock native)</text>
-
-    <rect x="60" y="475" width="460" height="30" rx="4" fill="rgba(76,29,149,0.18)" stroke="#a78bfa" stroke-width="0.5"/>
-    <text x="75" y="495" class="file-name">schema.sql</text>
-    <text x="170" y="495" class="file-meta">DDL — 5 tables, partial UNIQUE on current state</text>
-
-    <rect x="60" y="500" width="460" height="22" rx="4" fill="rgba(251,191,36,0.1)" stroke="#fbbf24" stroke-width="0"/>
-    <text x="75" y="515" class="file-name">seed.py</text>
-    <text x="155" y="515" class="file-meta">PoC seeder (Microsoft FY24 baseline)</text>
-  </g>
-
-  <!-- tests/ region -->
-  <g>
-    <rect x="560" y="150" width="300" height="240" rx="6" fill="#f8fafc"/>
-    <rect x="560" y="150" width="300" height="240" rx="6" fill="rgba(167,139,250,0.1)" stroke="#a78bfa" stroke-width="1.5"/>
-    <text x="580" y="178" class="dir-name" fill="#6d28d9">tests/</text>
-
-    <text x="580" y="210" class="file-name">test_schemas.py     15 tests  — all 8 schemas</text>
-    <text x="580" y="232" class="file-name">test_merge.py        9 tests  — 5 invariants + REQ-05 grep</text>
-    <text x="580" y="254" class="file-name">test_api.py          7 tests  — all 5 endpoints</text>
-    <text x="580" y="276" class="file-name">test_extract.py      6 tests  — Pydantic tool-calling validation</text>
-    <text x="580" y="298" class="file-name">test_parse.py        8 tests  — HTML/PDF section detection</text>
-    <text x="580" y="320" class="file-name">test_edgar.py        4 tests  — User-Agent + async semaphore</text>
-    <text x="580" y="345" class="file-name">conftest.py</text>
-    <text x="580" y="365" class="file-name">fixtures/  (msft_2024_10k_item1.html, amzn_2023_10k_item1a.html, …)</text>
-  </g>
-
-  <!-- diagrams/ + docs/ -->
-  <g>
-    <rect x="40" y="545" width="500" height="60" rx="6" fill="#f8fafc"/>
-    <rect x="40" y="545" width="500" height="60" rx="6" fill="rgba(251,113,133,0.08)" stroke="#fb7185" stroke-width="1.5"/>
-    <text x="60" y="571" class="dir-name" fill="#be123c">diagrams/  (SVGs)</text>
-    <text x="60" y="592" class="file-meta">architecture.svg · workflow.svg · project-structure.svg (this)</text>
-  </g>
-
-  <g>
-    <rect x="40" y="615" width="500" height="50" rx="6" fill="#f8fafc"/>
-    <rect x="40" y="615" width="500" height="50" rx="6" fill="rgba(94,234,212,0.08)" stroke="#0d9488" stroke-width="1.5"/>
-    <text x="60" y="641" class="dir-name" fill="#0f766e">docs/</text>
-    <text x="60" y="658" class="file-meta">OUT_OF_SCOPE.md  — explicit v1 non-goals</text>
-  </g>
-
-  <!-- src/static region -->
-  <g>
-    <rect x="560" y="400" width="300" height="180" rx="6" fill="#f8fafc"/>
-    <rect x="560" y="400" width="300" height="180" rx="6" fill="rgba(30,41,59,0.5)" stroke="#334155" stroke-width="1.5"/>
-    <text x="580" y="428" class="dir-name">src/static/</text>
-    <text x="580" y="450" class="file-name">index.html</text>
-    <text x="580" y="466" class="file-meta">API console (mounted at /ui)</text>
-    <text x="580" y="490" class="file-name">src/__init__.py</text>
-    <text x="580" y="510" class="file-meta">Package marker</text>
-  </g>
-
-  <!-- .planning/ footer -->
-  <g>
-    <rect x="40" y="678" width="820" height="14" rx="3" fill="#f8fafc"/>
-    <text x="60" y="690" class="footnote">.planning/ — 7 GSD phase PLAN files (gitignored from public)</text>
-  </g>
+  <rect width="900" height="580" fill="#FFFFFF"/>
+  <text x="40" y="38" class="title">Project Structure</text>
+  <text x="40" y="58" class="subtitle">REQs visible per file via colour accent</text>
+  <rect x="40" y="90" width="820" height="60" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+  <rect x="40" y="90" width="4" height="60" rx="2" fill="#64748B"/>
+  <text x="56" y="112" class="node-name">.</text>
+  <text x="56" y="128" class="node-sub">README · SPEC · Dockerfile · requirements.txt · pytest.ini · .env.example · conftest.py</text>
+  <rect x="40" y="170" width="400" height="70" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+  <rect x="40" y="170" width="4" height="70" rx="2" fill="#1B9AAA"/>
+  <text x="56" y="192" class="node-name">diagrams/</text>
+  <text x="56" y="208" class="node-sub">architecture.svg · workflow.svg · project-structure.svg · file-layout.svg</text>
+  <rect x="460" y="170" width="400" height="70" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+  <rect x="460" y="170" width="4" height="70" rx="2" fill="#0E7490"/>
+  <text x="476" y="192" class="node-name">docs/</text>
+  <text x="476" y="208" class="node-sub">OUT_OF_SCOPE.md</text>
+  <rect x="40" y="260" width="500" height="270" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+  <rect x="40" y="260" width="4" height="270" rx="2" fill="#E11D48"/>
+  <text x="56" y="282" class="node-name">src/</text>
+  <text x="56" y="298" class="node-sub">Python package</text>
+  <text x="60" y="295" class="node-name" fill="#0F172A">invariant core</text>
+  <rect x="60" y="305" width="220" height="60" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+  <rect x="60" y="305" width="4" height="60" rx="2" fill="#2563EB"/>
+  <text x="76" y="327" class="node-name">schemas.py</text>
+  <text x="76" y="343" class="node-sub">REQ-01</text>
+  <rect x="60" y="380" width="220" height="60" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+  <rect x="60" y="380" width="4" height="60" rx="2" fill="#2563EB"/>
+  <text x="76" y="402" class="node-name">merge.py</text>
+  <text x="76" y="418" class="node-sub">REQ-05..REQ-10</text>
+  <rect x="310" y="305" width="220" height="60" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+  <rect x="310" y="305" width="4" height="60" rx="2" fill="#2563EB"/>
+  <text x="326" y="327" class="node-name">api.py</text>
+  <text x="326" y="343" class="node-sub">FastAPI · 5 endpoints</text>
+  <rect x="310" y="380" width="220" height="60" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+  <rect x="310" y="380" width="4" height="60" rx="2" fill="#2563EB"/>
+  <text x="326" y="402" class="node-name">extract.py</text>
+  <text x="326" y="418" class="node-sub">REQ-11 · tool-call</text>
+  <rect x="310" y="455" width="220" height="60" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+  <rect x="310" y="455" width="4" height="60" rx="2" fill="#2563EB"/>
+  <text x="326" y="477" class="node-name">parse.py / edgar.py</text>
+  <text x="326" y="493" class="node-sub">PDF / EDGAR ingest</text>
+  <rect x="560" y="260" width="300" height="270" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+  <rect x="560" y="260" width="4" height="270" rx="2" fill="#0E7490"/>
+  <text x="576" y="282" class="node-name">tests/</text>
+  <text x="576" y="298" class="node-sub">50 tests · pytest</text>
+  <text x="580" y="295" class="node-name" fill="#0F172A">invariants</text>
+  <rect x="580" y="305" width="260" height="60" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+  <rect x="580" y="305" width="4" height="60" rx="2" fill="#2563EB"/>
+  <text x="596" y="327" class="node-name">test_merge.py</text>
+  <text x="596" y="343" class="node-sub">9 tests · 5 invariants</text>
+  <rect x="580" y="380" width="260" height="60" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+  <rect x="580" y="380" width="4" height="60" rx="2" fill="#2563EB"/>
+  <text x="596" y="402" class="node-name">test_schemas.py</text>
+  <text x="596" y="418" class="node-sub">15 tests</text>
+  <rect x="580" y="455" width="260" height="60" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+  <rect x="580" y="455" width="4" height="60" rx="2" fill="#2563EB"/>
+  <text x="596" y="477" class="node-name">+ 4 more test files</text>
+  <text x="596" y="493" class="node-sub">~875 LOC</text>
 </svg>
