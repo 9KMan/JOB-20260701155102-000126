@@ -6,6 +6,10 @@ deployment lives in a private repo per the Upwork contract.
 
 **Status:** v1 PoC — Microsoft + Amazon 10-K ingestion, bitemporal state, FastAPI query layer.
 
+
+## Business Problem Solved
+
+[filled from SPEC.md §1 — describe the business problem this solves, who benefits, and why it matters]
 ## Architecture
 
 ![Architecture](./diagrams/architecture.svg)
