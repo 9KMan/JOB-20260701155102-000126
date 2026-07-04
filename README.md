@@ -107,10 +107,6 @@ Coverage by test file:
 
 ---
 
-
-## Business Problem Solved
-
-[filled from SPEC.md §1 — describe the business problem this solves, who benefits, and why it matters]
 ## Architecture
 
 ![Architecture](./diagrams/architecture.svg)
